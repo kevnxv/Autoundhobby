@@ -54,6 +54,9 @@ p{margin:0 0 1em}
 /* hero */
 .hero{position:relative;overflow:hidden;padding:96px 0 84px;isolation:isolate}
 .hero__bg{position:absolute;inset:0;z-index:-1;background:radial-gradient(900px 500px at 85% 20%,rgba(255,210,31,.13),transparent 60%),linear-gradient(180deg,#15171b,#121417)}
+.hero--photo .hero__bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%}
+.hero--photo .hero__bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(18,20,23,.94) 0%,rgba(18,20,23,.84) 38%,rgba(18,20,23,.5) 68%,rgba(18,20,23,.28) 100%)}
+.hero--photo .hero__grid{display:none}
 .hero__grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(180deg,#000 30%,transparent)}
 .hero__lift{position:absolute;right:-40px;bottom:10px;width:min(620px,55vw);opacity:.5}
 .hero__lift rect{fill:#2a2f37}
@@ -249,6 +252,19 @@ p{margin:0 0 1em}
 .tile__cta{margin-top:auto;font-weight:700}
 .price-hero--2{grid-template-columns:1fr 1fr;margin:0}
 .equip--1{grid-template-columns:1fr;margin-top:20px}
+.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0 0}
+.shots+.price-hero{margin-top:28px}
+.shot--portrait img{object-position:center 22%}
+.shot{margin:0;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.shot img{width:100%;height:220px;object-fit:cover;object-position:center}
+.shot--tall img{height:100%;min-height:220px}
+.shot figcaption{display:flex;flex-direction:column;gap:2px;padding:12px 14px 14px}
+.shot figcaption strong{font:700 1.15rem/1.15 var(--display);letter-spacing:.02em;text-transform:uppercase}
+.shot figcaption span{color:var(--muted);font-size:.86rem}
+.shot__price{color:var(--accent);font:800 1.2rem/1 var(--display);margin-top:2px}
+.shots-note{margin:14px 0 0}
+.shots-note a{color:var(--accent)}
+.section__head--next{margin-top:64px}
 
 /* Ankauf-Landingpage */
 .lp-hero{position:relative;overflow:hidden;padding:48px 0 72px;isolation:isolate}
@@ -300,6 +316,8 @@ p{margin:0 0 1em}
   .tiles{grid-template-columns:1fr}
   .tile{min-height:0}
   .steps--4,.cards--4{grid-template-columns:1fr 1fr}
+  .shots{grid-template-columns:1fr 1fr}
+  .hero--photo .hero__bg::after{background:linear-gradient(180deg,rgba(18,20,23,.62) 0%,rgba(18,20,23,.88) 52%,#121417 100%)}
 }
 @media (max-width:860px){
   .page-lp .footer{padding-bottom:110px}
@@ -314,7 +332,8 @@ p{margin:0 0 1em}
   .nav__lp .btn span{display:none}
   .lp-hero{padding:28px 0 56px}
   .leadform{padding:20px;margin:0 -8px}
-  .leadform .row,.steps--4,.cards--4,.price-hero--2{grid-template-columns:1fr}
+  .leadform .row,.steps--4,.cards--4,.price-hero--2,.shots{grid-template-columns:1fr}
+  .shot img,.shot--tall img{height:210px}
   .leadform .row{gap:14px}
   .band{padding:28px}
 }
