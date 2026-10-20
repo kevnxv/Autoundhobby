@@ -37,9 +37,11 @@ p{margin:0 0 1em}
 /* nav */
 .nav{position:sticky;top:0;z-index:50;background:rgba(18,20,23,.82);backdrop-filter:saturate(140%) blur(12px);border-bottom:1px solid var(--line)}
 .nav__inner{display:flex;align-items:center;justify-content:space-between;height:72px}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand{display:flex;align-items:center;flex:none;gap:12px;text-decoration:none;min-width:0}
 .brand__mark{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font:800 1.05rem/1 var(--display);letter-spacing:.02em;transform:rotate(-4deg)}
-.brand__text{display:flex;flex-direction:column;line-height:1.1;margin:0}
+.brand__logo{display:block;height:48px;width:auto;max-width:none;flex:none}
+.brand__logo--footer{height:60px;width:auto;margin:0 0 8px;align-self:flex-start}
+.brand__text{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;margin:0}
 .brand__text strong{font:800 1.5rem/1 var(--display);text-transform:uppercase}
 .brand__text strong span{color:var(--accent)}
 .brand__text small{color:var(--muted);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase}
@@ -198,6 +200,8 @@ p{margin:0 0 1em}
   .callfab{display:grid}
 }
 @media (max-width:640px){
+  .brand__logo{height:40px}
+  .brand__logo--footer{height:48px}
   .section{padding:72px 0}
   .hero{padding:64px 0 56px}
   .hero__lift{opacity:.22;width:110vw;right:-30vw}
