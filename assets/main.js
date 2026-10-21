@@ -88,32 +88,148 @@ $$(".js-steps").forEach(form => {
   const src = document.createElement("input"); src.type = "hidden"; src.name = "seite"; src.value = location.pathname; form.appendChild(src);
 });
 
-// Absenden (alle Formulare)
-$$(".js-form").forEach(form => form.addEventListener("submit", async ev => {
+// WhatsApp-Text aus den ausgefüllten Feldern
+const WA_TITLES = {
+  "Autoankauf-Anfrage": "Neue Autoankauf-Anfrage über die Website",
+  "Mietwerkstatt-Anfrage": "Neue Mietwerkstatt-Anfrage über die Website",
+  "Teileanfrage": "Neue Autoteile-Anfrage über die Website"
+};
+const WA_LABELS = {
+  anliegen: "Anliegen",
+  baujahr: "Baujahr",
+  km: "Kilometerstand",
+  zustand: "Zustand",
+  kraftstoff: "Kraftstoff",
+  getriebe: "Getriebe",
+  preisvorstellung: "Preisvorstellung",
+  name: "Name",
+  telefon: "Telefon",
+  plz: "PLZ",
+  nachricht: "Nachricht"
+};
+function fieldText(data, key) {
+  if (key === "zustand") return data.getAll("zustand").map(v => String(v).trim()).filter(Boolean).join(", ");
+  const v = data.get(key);
+  return typeof v === "string" ? v.trim() : "";
+}
+function whatsAppMessage(form, data) {
+  const lines = [WA_TITLES[form.dataset.name] || "Neue Anfrage über die Website", ""];
+  const fahrzeug = [fieldText(data, "marke"), fieldText(data, "modell")].filter(Boolean).join(" ");
+  if (fahrzeug) lines.push(`Fahrzeug: ${fahrzeug}`);
+  for (const key of ["anliegen", "baujahr", "km", "zustand", "kraftstoff", "getriebe", "preisvorstellung", "name", "telefon", "plz", "nachricht"]) {
+    let val = fieldText(data, key);
+    if (!val) continue;
+    if (key === "km" && /^\d+$/.test(val)) val = Number(val).toLocaleString("de-DE");
+    const label = key === "nachricht" && form.dataset.name === "Teileanfrage" ? "Fahrzeug und Teil" : WA_LABELS[key];
+    lines.push(`${label}: ${val}`);
+  }
+  const seite = fieldText(data, "seite");
+  if (seite) lines.push(`Seite: ${seite}`);
+  return lines.join("\n");
+}
+function openWhatsApp(url) {
+  const mobile = matchMedia("(max-width: 860px)").matches;
+  if (mobile) location.assign(url);
+  else window.open(url, "_blank", "noopener,noreferrer");
+}
+
+// Absenden (alle Formulare): WhatsApp, und nur bei gesetztem Formspree zusätzlich per E-Mail
+$$(".js-form").forEach(form => form.addEventListener("submit", ev => {
   ev.preventDefault();
   const status = $(".form__status", form);
   const scope = $(".fstep.is-active", form) || form;
   if (!validate(scope)) { status.textContent = "Bitte füllen Sie alle Pflichtfelder (*) aus."; return; }
   const data = new FormData(form);
-  data.append("formular", form.dataset.name || "Anfrage");
+  if (String(data.get("website") || "").trim()) return;
+  const number = String(CFG.whatsapp || "491784444510").replace(/\D/g, "");
+  const text = whatsAppMessage(form, data);
+  openWhatsApp(`https://wa.me/${number}?text=${encodeURIComponent(text)}`);
   if (CFG.formspree) {
-    status.textContent = "Wird gesendet …";
-    try {
-      const r = await fetch(`https://formspree.io/f/${CFG.formspree}`, { method: "POST", body: data, headers: { Accept: "application/json" } });
-      if (!r.ok) throw 0;
-      form.reset(); status.textContent = "Danke! Ihre Anfrage ist angekommen – wir melden uns.";
-    } catch { status.textContent = `Senden fehlgeschlagen – bitte rufen Sie an: ${CFG.phone}`; }
-    return;
+    data.append("formular", form.dataset.name || "Anfrage");
+    fetch(`https://formspree.io/f/${CFG.formspree}`, { method: "POST", body: data, headers: { Accept: "application/json" } }).catch(() => {});
   }
-  if (CFG.email) {
-    const zust = data.getAll("zustand").join(", ");
-    const lines = [...data.entries()].filter(([k, v]) => !["datenschutz", "zustand"].includes(k) && typeof v === "string" && v).map(([k, v]) => `${k}: ${v}`);
-    if (zust) lines.push(`zustand: ${zust}`);
-    location.href = `mailto:${CFG.email}?subject=${encodeURIComponent(form.dataset.name || "Anfrage")}&body=${encodeURIComponent(lines.join("\n"))}`;
-    status.textContent = "Ihr E-Mail-Programm öffnet sich … (Fotos bitte dort anhängen)";
-    return;
-  }
-  status.textContent = `Vorschau: Versand noch nicht eingerichtet. Bitte rufen Sie an: ${CFG.phone}`;
+  status.textContent = `WhatsApp öffnet sich – bitte dort nur noch auf Senden tippen. Kein WhatsApp? Ruf an: ${CFG.phone || "0178 4444510"}`;
 }));
 
 $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());
+
+// 3D tilt and hero parallax. Transform and opacity only, one frame at a time.
+const touchOnly = matchMedia("(pointer: coarse)").matches || (navigator.maxTouchPoints > 0 && matchMedia("(hover: none)").matches);
+if (!reduce && !touchOnly) {
+  $$(".card, .price-card, .shot, .tile, .map").forEach(el => {
+    el.classList.add("tilt");
+    const glare = document.createElement("span");
+    glare.className = "glare";
+    glare.setAttribute("aria-hidden", "true");
+    el.appendChild(glare);
+    const max = el.classList.contains("map") ? 3.2 : 6;
+    let raf = 0, px = 0, py = 0, active = false;
+    const paint = () => {
+      raf = 0;
+      if (!active) return;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const rx = (0.5 - py / r.height) * max * 2;
+      const ry = (px / r.width - 0.5) * max * 2;
+      el.style.transform = `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translate3d(0,-4px,0)`;
+      glare.style.setProperty("--gx", `${(px / r.width * 100).toFixed(1)}%`);
+      glare.style.setProperty("--gy", `${(py / r.height * 100).toFixed(1)}%`);
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    el.addEventListener("pointerenter", e => {
+      if (e.pointerType && e.pointerType !== "mouse") return;
+      active = true;
+      el.classList.add("is-tilting");
+      el.style.willChange = "transform";
+    });
+    el.addEventListener("pointermove", e => {
+      if (!active || (e.pointerType && e.pointerType !== "mouse")) return;
+      const r = el.getBoundingClientRect();
+      px = e.clientX - r.left;
+      py = e.clientY - r.top;
+      queue();
+    });
+    const rest = () => {
+      active = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      el.classList.remove("is-tilting");
+      el.style.transform = "";
+      el.style.willChange = "";
+    };
+    el.addEventListener("pointerleave", rest);
+    el.addEventListener("blur", rest, true);
+  });
+}
+
+if (!reduce) {
+  const heroes = $$(".hero--photo");
+  if (heroes.length) {
+    let raf = 0, mx = 0, my = 0;
+    const paint = () => {
+      raf = 0;
+      heroes.forEach(hero => {
+        const img = $(".hero__bg img", hero);
+        if (!img) return;
+        const passed = Math.max(0, -hero.getBoundingClientRect().top);
+        const sy = Math.min(36, passed * 0.22);
+        img.style.transform = `translate3d(${mx.toFixed(1)}px, ${(sy + my).toFixed(1)}px, 0) scale(1.2)`;
+      });
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    addEventListener("scroll", queue, { passive: true });
+    if (!touchOnly) {
+      heroes.forEach(hero => {
+        hero.addEventListener("pointermove", e => {
+          if (e.pointerType && e.pointerType !== "mouse") return;
+          const r = hero.getBoundingClientRect();
+          mx = ((e.clientX - r.left) / r.width - 0.5) * -14;
+          my = ((e.clientY - r.top) / r.height - 0.5) * -8;
+          queue();
+        });
+        hero.addEventListener("pointerleave", () => { mx = 0; my = 0; queue(); });
+      });
+    }
+    queue();
+  }
+}
