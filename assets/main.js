@@ -32,7 +32,8 @@ $$(".js-open").forEach(el => {
   const H = { Mo: [570, 1080], Di: [570, 1080], Mi: [570, 1080], Do: [570, 1080], Fr: [570, 1080], Sa: [540, 960] }[day];
   const open = H && mins >= H[0] && mins < H[1];
   el.classList.add(open ? "is-open" : "is-closed");
-  el.textContent = (open ? "Jetzt geöffnet · " : "Gerade geschlossen · ") + "Mo–Fr 9:30–18:00 · Sa 9:00–16:00";
+  const live = open ? "Jetzt geöffnet" : (el.dataset.open === "badge" ? "Jetzt geschlossen" : "Gerade geschlossen");
+  el.textContent = el.dataset.open === "badge" ? live : `${live} · Mo–Fr 9:30–18:00 · Sa 9:00–16:00`;
 });
 
 // Karte erst nach Klick
@@ -230,6 +231,23 @@ if (!reduce) {
         hero.addEventListener("pointerleave", () => { mx = 0; my = 0; queue(); });
       });
     }
+    queue();
+  }
+}
+
+if (!reduce) {
+  const mark = $(".footer__mark span");
+  if (mark) {
+    let raf = 0;
+    const paint = () => {
+      raf = 0;
+      const r = mark.parentElement.getBoundingClientRect();
+      const view = innerHeight || 800;
+      const seen = 1 - Math.min(1, Math.max(0, (r.top + r.height * 0.35) / view));
+      mark.style.transform = `translate3d(${(seen * 18).toFixed(1)}px,0,0)`;
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    addEventListener("scroll", queue, { passive: true });
     queue();
   }
 }
