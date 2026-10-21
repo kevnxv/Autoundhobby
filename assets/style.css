@@ -239,8 +239,9 @@ p{margin:0 0 1em}
 .footer__hours li{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-top:1px solid var(--line);color:var(--muted)}
 .footer__hours li span:last-child{color:var(--text);font-variant-numeric:tabular-nums}
 .footer .pill{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 10px;background:rgba(255,255,255,.03);color:var(--text);font-weight:600;font-size:.86rem}
-.footer__mark{margin:18px 0 8px;overflow:hidden;line-height:.78;user-select:none;container-type:inline-size}
-.footer__mark span{display:block;font-weight:600;letter-spacing:-.045em;white-space:nowrap;font-size:min(11.5rem,calc(100cqi / 6.05));color:transparent;-webkit-text-stroke:1px rgba(255,210,31,.62);background-image:linear-gradient(100deg,rgba(255,210,31,.18) 0%,rgba(255,210,31,.18) 42%,#fff1a8 50%,rgba(255,210,31,.18) 58%,rgba(255,210,31,.18) 100%);background-size:220% 100%;background-position:120% 0;-webkit-background-clip:text;background-clip:text;animation:mark-shimmer 9s linear infinite}
+.footer__mark{margin:18px 0 8px;line-height:0;user-select:none;container-type:inline-size}
+.footer__mark svg{display:block;width:100%;height:auto;overflow:visible}
+.footer__mark-shine{transform-box:fill-box;transform-origin:0 0;animation:mark-shimmer 9s linear infinite}
 .footer__bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 28px;padding-top:18px;border-top:1px solid var(--line)}
 .footer__bar nav{display:flex;flex-wrap:wrap;gap:8px 18px}
 .footer__bar a{color:var(--muted)}
@@ -251,7 +252,7 @@ p{margin:0 0 1em}
 .footer__credit a:hover{color:var(--text);text-decoration-color:currentColor}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @keyframes cta-sweep{from{background-position:0% 50%}to{background-position:220% 50%}}
-@keyframes mark-shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+@keyframes mark-shimmer{from{transform:translateX(0)}to{transform:translateX(150cqi)}}
 
 .callfab{display:none;position:fixed;right:16px;bottom:16px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-ink);place-items:center;box-shadow:0 16px 40px rgba(0,0,0,.45);z-index:60}
 .callfab svg{width:24px;height:24px;fill:currentColor}

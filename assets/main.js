@@ -235,19 +235,3 @@ if (!reduce) {
   }
 }
 
-if (!reduce) {
-  const mark = $(".footer__mark span");
-  if (mark) {
-    let raf = 0;
-    const paint = () => {
-      raf = 0;
-      const r = mark.parentElement.getBoundingClientRect();
-      const view = innerHeight || 800;
-      const seen = 1 - Math.min(1, Math.max(0, (r.top + r.height * 0.35) / view));
-      mark.style.transform = `translate3d(${(seen * 18).toFixed(1)}px,0,0)`;
-    };
-    const queue = () => { if (!raf) raf = requestAnimationFrame(paint); };
-    addEventListener("scroll", queue, { passive: true });
-    queue();
-  }
-}
