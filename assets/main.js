@@ -88,32 +88,67 @@ $$(".js-steps").forEach(form => {
   const src = document.createElement("input"); src.type = "hidden"; src.name = "seite"; src.value = location.pathname; form.appendChild(src);
 });
 
-// Absenden (alle Formulare)
-$$(".js-form").forEach(form => form.addEventListener("submit", async ev => {
+// WhatsApp-Text aus den ausgefüllten Feldern
+const WA_TITLES = {
+  "Autoankauf-Anfrage": "Neue Autoankauf-Anfrage über die Website",
+  "Mietwerkstatt-Anfrage": "Neue Mietwerkstatt-Anfrage über die Website",
+  "Teileanfrage": "Neue Autoteile-Anfrage über die Website"
+};
+const WA_LABELS = {
+  anliegen: "Anliegen",
+  baujahr: "Baujahr",
+  km: "Kilometerstand",
+  zustand: "Zustand",
+  kraftstoff: "Kraftstoff",
+  getriebe: "Getriebe",
+  preisvorstellung: "Preisvorstellung",
+  name: "Name",
+  telefon: "Telefon",
+  plz: "PLZ",
+  nachricht: "Nachricht"
+};
+function fieldText(data, key) {
+  if (key === "zustand") return data.getAll("zustand").map(v => String(v).trim()).filter(Boolean).join(", ");
+  const v = data.get(key);
+  return typeof v === "string" ? v.trim() : "";
+}
+function whatsAppMessage(form, data) {
+  const lines = [WA_TITLES[form.dataset.name] || "Neue Anfrage über die Website", ""];
+  const fahrzeug = [fieldText(data, "marke"), fieldText(data, "modell")].filter(Boolean).join(" ");
+  if (fahrzeug) lines.push(`Fahrzeug: ${fahrzeug}`);
+  for (const key of ["anliegen", "baujahr", "km", "zustand", "kraftstoff", "getriebe", "preisvorstellung", "name", "telefon", "plz", "nachricht"]) {
+    let val = fieldText(data, key);
+    if (!val) continue;
+    if (key === "km" && /^\d+$/.test(val)) val = Number(val).toLocaleString("de-DE");
+    const label = key === "nachricht" && form.dataset.name === "Teileanfrage" ? "Fahrzeug und Teil" : WA_LABELS[key];
+    lines.push(`${label}: ${val}`);
+  }
+  const seite = fieldText(data, "seite");
+  if (seite) lines.push(`Seite: ${seite}`);
+  return lines.join("\n");
+}
+function openWhatsApp(url) {
+  const mobile = matchMedia("(max-width: 860px)").matches;
+  if (mobile) location.assign(url);
+  else window.open(url, "_blank", "noopener,noreferrer");
+}
+
+// Absenden (alle Formulare): WhatsApp, und nur bei gesetztem Formspree zusätzlich per E-Mail
+$$(".js-form").forEach(form => form.addEventListener("submit", ev => {
   ev.preventDefault();
   const status = $(".form__status", form);
   const scope = $(".fstep.is-active", form) || form;
   if (!validate(scope)) { status.textContent = "Bitte füllen Sie alle Pflichtfelder (*) aus."; return; }
   const data = new FormData(form);
-  data.append("formular", form.dataset.name || "Anfrage");
+  if (String(data.get("website") || "").trim()) return;
+  const number = String(CFG.whatsapp || "491784444510").replace(/\D/g, "");
+  const text = whatsAppMessage(form, data);
+  openWhatsApp(`https://wa.me/${number}?text=${encodeURIComponent(text)}`);
   if (CFG.formspree) {
-    status.textContent = "Wird gesendet …";
-    try {
-      const r = await fetch(`https://formspree.io/f/${CFG.formspree}`, { method: "POST", body: data, headers: { Accept: "application/json" } });
-      if (!r.ok) throw 0;
-      form.reset(); status.textContent = "Danke! Ihre Anfrage ist angekommen – wir melden uns.";
-    } catch { status.textContent = `Senden fehlgeschlagen – bitte rufen Sie an: ${CFG.phone}`; }
-    return;
+    data.append("formular", form.dataset.name || "Anfrage");
+    fetch(`https://formspree.io/f/${CFG.formspree}`, { method: "POST", body: data, headers: { Accept: "application/json" } }).catch(() => {});
   }
-  if (CFG.email) {
-    const zust = data.getAll("zustand").join(", ");
-    const lines = [...data.entries()].filter(([k, v]) => !["datenschutz", "zustand"].includes(k) && typeof v === "string" && v).map(([k, v]) => `${k}: ${v}`);
-    if (zust) lines.push(`zustand: ${zust}`);
-    location.href = `mailto:${CFG.email}?subject=${encodeURIComponent(form.dataset.name || "Anfrage")}&body=${encodeURIComponent(lines.join("\n"))}`;
-    status.textContent = "Ihr E-Mail-Programm öffnet sich … (Fotos bitte dort anhängen)";
-    return;
-  }
-  status.textContent = `Vorschau: Versand noch nicht eingerichtet. Bitte rufen Sie an: ${CFG.phone}`;
+  status.textContent = `WhatsApp öffnet sich – bitte dort nur noch auf Senden tippen. Kein WhatsApp? Ruf an: ${CFG.phone || "0178 4444510"}`;
 }));
 
 $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());
