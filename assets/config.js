@@ -2,7 +2,7 @@
 window.SITE_CONFIG = {
   "email": "",
   "formspree": "",
-  "whatsapp": "",
+  "whatsapp": "491784444510",
   "phone": "0178 4444510",
   "mapsEmbed": "https://www.google.com/maps?q=Im+Liefeld+38,+40227+D%C3%BCsseldorf&output=embed"
 };
