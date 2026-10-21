@@ -152,3 +152,84 @@ $$(".js-form").forEach(form => form.addEventListener("submit", ev => {
 }));
 
 $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());
+
+// 3D tilt and hero parallax. Transform and opacity only, one frame at a time.
+const touchOnly = matchMedia("(pointer: coarse)").matches || (navigator.maxTouchPoints > 0 && matchMedia("(hover: none)").matches);
+if (!reduce && !touchOnly) {
+  $$(".card, .price-card, .shot, .tile, .map").forEach(el => {
+    el.classList.add("tilt");
+    const glare = document.createElement("span");
+    glare.className = "glare";
+    glare.setAttribute("aria-hidden", "true");
+    el.appendChild(glare);
+    const max = el.classList.contains("map") ? 3.2 : 6;
+    let raf = 0, px = 0, py = 0, active = false;
+    const paint = () => {
+      raf = 0;
+      if (!active) return;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const rx = (0.5 - py / r.height) * max * 2;
+      const ry = (px / r.width - 0.5) * max * 2;
+      el.style.transform = `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translate3d(0,-4px,0)`;
+      glare.style.setProperty("--gx", `${(px / r.width * 100).toFixed(1)}%`);
+      glare.style.setProperty("--gy", `${(py / r.height * 100).toFixed(1)}%`);
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    el.addEventListener("pointerenter", e => {
+      if (e.pointerType && e.pointerType !== "mouse") return;
+      active = true;
+      el.classList.add("is-tilting");
+      el.style.willChange = "transform";
+    });
+    el.addEventListener("pointermove", e => {
+      if (!active || (e.pointerType && e.pointerType !== "mouse")) return;
+      const r = el.getBoundingClientRect();
+      px = e.clientX - r.left;
+      py = e.clientY - r.top;
+      queue();
+    });
+    const rest = () => {
+      active = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      el.classList.remove("is-tilting");
+      el.style.transform = "";
+      el.style.willChange = "";
+    };
+    el.addEventListener("pointerleave", rest);
+    el.addEventListener("blur", rest, true);
+  });
+}
+
+if (!reduce) {
+  const heroes = $$(".hero--photo");
+  if (heroes.length) {
+    let raf = 0, mx = 0, my = 0;
+    const paint = () => {
+      raf = 0;
+      heroes.forEach(hero => {
+        const img = $(".hero__bg img", hero);
+        if (!img) return;
+        const passed = Math.max(0, -hero.getBoundingClientRect().top);
+        const sy = Math.min(36, passed * 0.22);
+        img.style.transform = `translate3d(${mx.toFixed(1)}px, ${(sy + my).toFixed(1)}px, 0) scale(1.2)`;
+      });
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    addEventListener("scroll", queue, { passive: true });
+    if (!touchOnly) {
+      heroes.forEach(hero => {
+        hero.addEventListener("pointermove", e => {
+          if (e.pointerType && e.pointerType !== "mouse") return;
+          const r = hero.getBoundingClientRect();
+          mx = ((e.clientX - r.left) / r.width - 0.5) * -14;
+          my = ((e.clientY - r.top) / r.height - 0.5) * -8;
+          queue();
+        });
+        hero.addEventListener("pointerleave", () => { mx = 0; my = 0; queue(); });
+      });
+    }
+    queue();
+  }
+}
