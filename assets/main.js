@@ -157,7 +157,7 @@ $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());
 // 3D tilt and hero parallax. Transform and opacity only, one frame at a time.
 const touchOnly = matchMedia("(pointer: coarse)").matches || (navigator.maxTouchPoints > 0 && matchMedia("(hover: none)").matches);
 if (!reduce && !touchOnly) {
-  $$(".card, .price-card, .shot, .tile, .map").forEach(el => {
+  $$(".card, .price-card, .shot, .tile, .map, .tire-photo:not(.tire-photo--sm)").forEach(el => {
     el.classList.add("tilt");
     const glare = document.createElement("span");
     glare.className = "glare";
