@@ -436,3 +436,28 @@ p{margin:0 0 1em}
   *,*::before,*::after{animation:none!important;transition:none!important}
   .js .reveal{opacity:1;transform:none}
 }
+
+/* Reifenwechsel & Auswuchten */
+.tires{align-items:center}
+.tires h2{margin-top:0}
+.tires__price{color:var(--text)!important;font-weight:600}
+.tires__price a{color:var(--accent);text-decoration:none;white-space:nowrap}
+.tires__price a:hover{text-decoration:underline}
+.tire-photo{position:relative;margin:0;border-radius:28px;padding:clamp(14px,2.4vw,26px) clamp(14px,2.4vw,26px) 12px;background:#fff;border:1px solid rgba(255,210,31,.38);box-shadow:0 0 0 6px rgba(255,210,31,.06),0 0 80px -22px rgba(255,210,31,.55),0 30px 60px -34px rgba(0,0,0,.85)}
+.tire-photo img{display:block;width:100%;height:auto;border-radius:16px}
+.tire-photo figcaption{margin-top:4px;text-align:center;font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#55534c}
+.tire-specs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:48px}
+.tire-specs h3{margin-top:0}
+.tire-specs .equip li{background:var(--s3)}
+.card--feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:40px;align-items:center}
+.card--feature .btn{margin-top:8px;color:var(--accent-ink)}
+.tire-photo--sm{padding:12px;border-radius:20px;box-shadow:0 0 0 5px rgba(255,210,31,.06),0 0 60px -22px rgba(255,210,31,.5)}
+.tire-photo--sm img{border-radius:12px}
+@media (max-width:1000px){
+  .card--feature{grid-template-columns:1fr;gap:22px}
+  .tire-photo--sm{max-width:420px}
+}
+@media (max-width:640px){
+  .tire-specs{grid-template-columns:1fr;margin-top:32px}
+  .tires .cta .btn{width:100%}
+}
