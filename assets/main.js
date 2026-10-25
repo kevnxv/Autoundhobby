@@ -157,7 +157,7 @@ $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());
 // 3D tilt and hero parallax. Transform and opacity only, one frame at a time.
 const touchOnly = matchMedia("(pointer: coarse)").matches || (navigator.maxTouchPoints > 0 && matchMedia("(hover: none)").matches);
 if (!reduce && !touchOnly) {
-  $$(".card, .price-card, .shot, .tile, .map, .tire-photo:not(.tire-photo--sm)").forEach(el => {
+  $$(".card, .price-card, .shot, .tile, .cat, .map, .tire-photo:not(.tire-photo--sm)").forEach(el => {
     el.classList.add("tilt");
     const glare = document.createElement("span");
     glare.className = "glare";
@@ -235,3 +235,21 @@ if (!reduce) {
   }
 }
 
+
+// Kategorie-Wechsler: aktive Kategorie sichtbar halten, Reifenwechsel beim Scrollen hervorheben
+$$(".catbar__pills").forEach(bar => {
+  const center = () => {
+    const a = $("[aria-current]", bar);
+    if (a) bar.scrollLeft = a.offsetLeft - (bar.clientWidth - a.offsetWidth) / 2;
+  };
+  center();
+  const m = $('[data-cat="mietwerkstatt"]', bar), r = $('[data-cat="reifen"]', bar), sec = $("#reifenwechsel");
+  if (m && r && sec && m.hasAttribute("aria-current") && "IntersectionObserver" in window) {
+    new IntersectionObserver(es => es.forEach(e => {
+      const on = e.isIntersecting;
+      (on ? r : m).setAttribute("aria-current", "page");
+      (on ? m : r).removeAttribute("aria-current");
+      center();
+    }), { rootMargin: "-35% 0px -55% 0px" }).observe(sec);
+  }
+});

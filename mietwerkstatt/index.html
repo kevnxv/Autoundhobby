@@ -21,9 +21,9 @@
 <body class="page-site">
 <a class="skip" href="#main">Zum Inhalt springen</a>
 <header class="nav" id="top"><div class="wrap nav__inner">
-  <a href="../" class="brand" aria-label="Auto + Hobby – zur Startseite"><img class="brand__logo" src="../assets/logo.png" alt="Auto+Hobby – Do it yourself, Düsseldorf" width="89" height="48"></a>
-  <button class="nav__toggle" aria-expanded="false" aria-controls="menu" aria-label="Menü öffnen"><span></span><span></span><span></span></button><nav id="menu" class="nav__menu" aria-label="Hauptnavigation"><a href="../mietwerkstatt/" aria-current=page>Mietwerkstatt</a><a href="../autoankauf/">Autoankauf</a><a href="../autoteile/">Autoteile</a><a href="../#kontakt">Kontakt</a><a class="btn btn--sm btn--accent" href="tel:+491784444510">0178 4444510</a></nav>
-</div></header>
+  <a href="../" class="brand" aria-label="Auto + Hobby – zur Kategorienauswahl"><img class="brand__logo" src="../assets/logo.png" alt="Auto+Hobby – Do it yourself, Düsseldorf" width="89" height="48"></a>
+  <div class="nav__lp"><a class="btn btn--ghost btn--sm hide-sm btn--kontakt" href="#kontakt">Kontakt</a><a class="btn btn--sm btn--accent" href="tel:+491784444510">0178 4444510</a></div>
+</div><nav class="catbar" aria-label="Kategorien"><div class="wrap catbar__inner"><a class="catbar__back" href="../" aria-label="Alle Kategorien"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>Kategorien</span></a><span class="catbar__sep" aria-hidden="true"></span><div class="catbar__pills"><a class="catpill" data-cat="mietwerkstatt" href="../mietwerkstatt/" aria-current="page"><span class="catpill__l">Mietwerkstatt</span><span class="catpill__s" aria-hidden="true">Werkstatt</span></a><a class="catpill" data-cat="autoankauf" href="../autoankauf/"><span class="catpill__l">Autoankauf</span><span class="catpill__s" aria-hidden="true">Ankauf</span></a><a class="catpill" data-cat="reifen" href="../mietwerkstatt/#reifenwechsel"><span class="catpill__l">Reifenwechsel</span><span class="catpill__s" aria-hidden="true">Reifen</span></a><a class="catpill" data-cat="autoteile" href="../autoteile/"><span class="catpill__l">Autoteile</span><span class="catpill__s" aria-hidden="true">Teile</span></a></div></div></nav></header>
 <main id="main">
 
   <!-- HERO -->
@@ -337,7 +337,7 @@
     <div class="wrap contact">
       <div class="contact__info reveal">
         <p class="kicker">Kontakt</p>
-        <h2>Platz anfragen</h2>
+        <h2>Kontakt &amp; Anfahrt</h2>
         <p>Rufen Sie an oder schreiben Sie per WhatsApp. Am Telefon ist der Inhaber.</p>
         <dl class="info">
           <div><dt>Adresse</dt><dd>Autohobby &amp; Automobile A. Splittgerber<br>Im Liefeld 38<br>40227 Düsseldorf-Oberbilk</dd></div>
@@ -345,6 +345,14 @@
           <div><dt>Öffnungszeiten</dt><dd>Montag – Freitag: 9:30 bis 18:00 Uhr<br>Samstag: 9:00 bis 16:00 Uhr<br>Außerhalb der Öffnungszeiten und an Sonn- und Feiertagen sind Reparaturen nach Absprache möglich!</dd></div>
         </dl>
         <p><a class="btn btn--ghost" href="https://www.google.com/maps/dir/?api=1&amp;destination=Im+Liefeld+38,+40227+D%C3%BCsseldorf" target="_blank" rel="noopener">Route planen</a></p>
+        <div class="map" role="region" aria-label="Karte: Im Liefeld 38, 40227 Düsseldorf">
+          <div class="map__consent">
+            <span class="map__pin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg></span>
+            <p><strong>Auto+Hobby</strong>Im Liefeld 38<br>40227 Düsseldorf</p>
+            <button type="button" class="btn btn--accent js-loadmap">Karte laden</button>
+            <p class="map__note">Google Maps wird erst geladen, wenn Sie auf „Karte laden“ klicken.</p>
+          </div>
+        </div>
       </div>
 
       <form class="form reveal js-form" id="bookingForm" data-name="Mietwerkstatt-Anfrage" method="POST" novalidate>
@@ -376,7 +384,7 @@
   </div></div>
   <div class="footer__grid">
     <div class="footer__col">
-      <a href="../" class="brand" aria-label="Auto + Hobby – zur Startseite"><img class="brand__logo brand__logo--footer" src="../assets/logo.png" alt="Auto+Hobby – Do it yourself, Düsseldorf" width="104" height="56"></a>
+      <a href="../" class="brand" aria-label="Auto + Hobby – zur Kategorienauswahl"><img class="brand__logo brand__logo--footer" src="../assets/logo.png" alt="Auto+Hobby – Do it yourself, Düsseldorf" width="104" height="56"></a>
       <p class="footer__tag">Mietwerkstatt · Autoankauf · Autoteile</p>
       <p>Am Telefon ist der Inhaber.</p>
     </div>
