@@ -20,7 +20,15 @@ if (toggle && menu) {
 // Reveal
 const items = $$(".reveal");
 if ("IntersectionObserver" in window && !reduce) {
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+  // Was gleichzeitig ins Bild kommt (Karten einer Reihe, Schritte), erscheint gestaffelt: 50 ms Abstand, höchstens 200 ms.
+  // Die Verzögerung gilt nur fürs Einblenden und fällt danach weg, damit Hover und Kippen sofort reagieren.
+  const io = new IntersectionObserver(es => es.filter(e => e.isIntersecting).forEach((e, k) => {
+    const el = e.target;
+    el.style.transitionDelay = `${Math.min(k, 4) * 50}ms`;
+    el.addEventListener("transitionend", () => { el.style.transitionDelay = ""; }, { once: true });
+    el.classList.add("in");
+    io.unobserve(el);
+  }), { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
   items.forEach(el => io.observe(el));
 } else items.forEach(el => el.classList.add("in"));
 
@@ -77,7 +85,7 @@ $$(".js-steps").forEach(form => {
   const q = new URLSearchParams(location.search);
   const set = (name, val) => { const f = form.elements[name]; if (f && val && !f.length) f.value = val; };
   set("marke", q.get("marke") || form.dataset.prefillMarke);
-  set("modell", q.get("modell"));
+  set("modell", q.get("modell") || form.dataset.prefillModell);
   set("baujahr", q.get("baujahr"));
   set("km", q.get("km"));
   const z = q.get("zustand");
@@ -134,12 +142,49 @@ function openWhatsApp(url) {
   else window.open(url, "_blank", "noopener,noreferrer");
 }
 
+// Modell-Finder auf der Ankaufseite: Marke wählen, dann Modell, dann zur Modellseite. Die Markenlogos filtern die Karten.
+// Ohne JavaScript bleibt der Finder verborgen, alle Karten stehen da, und die Logos führen zur Markenseite.
+$$("[data-finder]").forEach(finder => {
+  const karten = $$("[data-modellkarten] > li");
+  const marke = $('select[name="marke"]', finder), modell = $('select[name="modell"]', finder);
+  const logos = $$("[data-marke-filter]");
+  const zeige = slug => {
+    karten.forEach(k => { k.hidden = Boolean(slug) && k.dataset.marke !== slug; });
+    logos.forEach(l => l.setAttribute("aria-pressed", String(Boolean(slug) && l.dataset.markeFilter === slug)));
+    modell.replaceChildren(new Option(slug ? "Modell wählen" : "Erst Marke wählen", ""));
+    karten.filter(k => k.dataset.marke === slug).forEach(k => modell.add(new Option(k.dataset.modell, k.querySelector("a").getAttribute("href"))));
+    modell.disabled = !slug;
+  };
+  finder.hidden = false;
+  // Mit JavaScript werden die Logo-Links zu Filter-Knöpfen.
+  logos.forEach(l => { l.setAttribute("role", "button"); l.setAttribute("aria-pressed", "false"); });
+  marke.addEventListener("change", () => zeige(marke.value));
+  logos.forEach(l => l.addEventListener("click", ev => {
+    ev.preventDefault();
+    const neu = l.getAttribute("aria-pressed") === "true" ? "" : l.dataset.markeFilter;
+    marke.value = neu;
+    zeige(neu);
+  }));
+  finder.addEventListener("submit", ev => {
+    ev.preventDefault();
+    if (modell.value) location.assign(modell.value);
+    else if (marke.value) modell.focus();
+    else marke.focus();
+  });
+});
+
+// Rückmeldung unter dem Formular blendet kurz ein, damit man sie bemerkt. 200 ms, Kurve wie --ease, ohne bei reduzierter Bewegung.
+function melde(status, text) {
+  status.textContent = text;
+  if (!reduce && status.animate) status.animate([{ opacity: 0, transform: "translateY(4px)" }, { opacity: 1, transform: "none" }], { duration: 200, easing: "cubic-bezier(.16,1,.3,1)" });
+}
+
 // Absenden (alle Formulare): WhatsApp, und nur bei gesetztem Formspree zusätzlich per E-Mail
 $$(".js-form").forEach(form => form.addEventListener("submit", ev => {
   ev.preventDefault();
   const status = $(".form__status", form);
   const scope = $(".fstep.is-active", form) || form;
-  if (!validate(scope)) { status.textContent = "Bitte füllen Sie alle Pflichtfelder (*) aus."; return; }
+  if (!validate(scope)) { melde(status, "Bitte füllen Sie alle Pflichtfelder (*) aus."); return; }
   const data = new FormData(form);
   if (String(data.get("website") || "").trim()) return;
   const number = String(CFG.whatsapp || "491784444510").replace(/\D/g, "");
@@ -149,7 +194,7 @@ $$(".js-form").forEach(form => form.addEventListener("submit", ev => {
     data.append("formular", form.dataset.name || "Anfrage");
     fetch(`https://formspree.io/f/${CFG.formspree}`, { method: "POST", body: data, headers: { Accept: "application/json" } }).catch(() => {});
   }
-  status.textContent = `WhatsApp öffnet sich – bitte dort nur noch auf Senden tippen. Kein WhatsApp? Ruf an: ${CFG.phone || "0178 4444510"}`;
+  melde(status, `WhatsApp öffnet sich – bitte dort nur noch auf Senden tippen. Kein WhatsApp? Rufen Sie an: ${CFG.phone || "0178 4444510"}`);
 }));
 
 $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());
@@ -157,13 +202,14 @@ $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());
 // 3D tilt and hero parallax. Transform and opacity only, one frame at a time.
 const touchOnly = matchMedia("(pointer: coarse)").matches || (navigator.maxTouchPoints > 0 && matchMedia("(hover: none)").matches);
 if (!reduce && !touchOnly) {
-  $$(".card, .price-card, .shot, .tile, .cat, .map, .tire-photo:not(.tire-photo--sm)").forEach(el => {
+  // Die Karte kippt nicht: Wer auf sie zeigt, will sie laden und bedienen, nicht bewegen.
+  $$(".card, .shot, .tile, .tire-photo:not(.tire-photo--sm)").forEach(el => {
     el.classList.add("tilt");
     const glare = document.createElement("span");
     glare.className = "glare";
     glare.setAttribute("aria-hidden", "true");
     el.appendChild(glare);
-    const max = el.classList.contains("map") ? 3.2 : 6;
+    const max = 6;
     let raf = 0, px = 0, py = 0, active = false;
     const paint = () => {
       raf = 0;
