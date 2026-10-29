@@ -5,6 +5,17 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 document.documentElement.classList.add("js");
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Schrift der Startseite (Bebas Neue, 14 KB) nach dem Laden vorab holen: Wer über das Logo zur Startseite wechselt,
+// sieht die Überschrift dann sofort richtig statt erst nach dem Nachladen.
+if (!document.body.classList.contains("page-picker")) {
+  addEventListener("load", () => {
+    const vorab = document.createElement("link");
+    Object.assign(vorab, { rel: "prefetch", as: "font", type: "font/woff2", crossOrigin: "anonymous",
+      href: new URL("fonts/bebas-neue-400.woff2", $('script[src$="main.js"]').src).href });
+    document.head.append(vorab);
+  });
+}
+
 // Mobile Menü
 const toggle = $(".nav__toggle"), menu = $("#menu");
 if (toggle && menu) {
