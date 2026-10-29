@@ -70,6 +70,16 @@ test.describe('Am Schreibtisch', () => {
     await expect.poll(() => pfadMitAnker(page)).toBe('/');
   });
 
+  test('Überschrift der Startseite springt nicht um: Bebas Neue wartet, wird vorab geladen und vorab geholt', async ({ page }) => {
+    // Mit swap erschien die Überschrift erst in der viel breiteren Ersatzschrift und sprang dann um (2026-10-29).
+    expect(readFileSync(new URL('../assets/style.css', import.meta.url), 'utf8')).toMatch(/font-family:"Bebas Neue";[^}]*font-display:block/);
+    await page.goto('/mietwerkstatt/');
+    await expect(page.locator('link[rel="prefetch"][href$="/assets/fonts/bebas-neue-400.woff2"]')).toHaveCount(1);
+    await page.locator('a.brand').first().click();
+    await expect.poll(() => pfadMitAnker(page)).toBe('/');
+    await expect(page.locator('link[rel="preload"][as="font"][href="assets/fonts/bebas-neue-400.woff2"][crossorigin]')).toHaveCount(1);
+  });
+
   test('Mietwerkstatt-Formular: Pflichtfelder werden geprüft, dann öffnet WhatsApp mit der Anfrage', async ({ page }) => {
     await page.addInitScript(() => { window.__wa = []; window.open = (url) => { window.__wa.push(String(url)); return null; }; });
     await page.goto('/mietwerkstatt/#kontakt');
