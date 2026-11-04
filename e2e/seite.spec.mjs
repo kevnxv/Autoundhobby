@@ -47,11 +47,13 @@ test.describe('Am Schreibtisch', () => {
     });
   }
 
-  test('Startseite: vier Kategorien führen auf ihre Seiten, Anruf oben', async ({ page }) => {
-    test.slow(); // fünf Seitenaufrufe, WebKit braucht dafür neben anderen Tests über 30 s
+  test('Startseite: drei Kategorien führen auf ihre Seiten, Anruf oben', async ({ page }) => {
+    test.slow(); // vier Seitenaufrufe, WebKit braucht dafür neben anderen Tests über 30 s
     await page.goto('/');
     await expect(page.locator('.picker__top a[href="tel:+491784444510"]')).toBeVisible();
-    for (const [name, ziel] of [['Mietwerkstatt', '/mietwerkstatt/'], ['Autoankauf', '/autoankauf/'], ['Reifenwechsel', '/mietwerkstatt/#reifenwechsel'], ['Autoteile', '/autoteile/']]) {
+    // Reifenwechsel ist seit 2026-10-29 keine eigene Kategorie mehr.
+    await expect(page.locator('a.kat')).toHaveCount(3);
+    for (const [name, ziel] of [['Mietwerkstatt', '/mietwerkstatt/'], ['Autoankauf', '/autoankauf/'], ['Autoteile', '/autoteile/']]) {
       await page.goto('/');
       await page.locator('a.kat', { hasText: name }).click();
       await expect.poll(() => pfadMitAnker(page)).toBe(ziel);
@@ -117,7 +119,11 @@ test.describe('Am Schreibtisch', () => {
   test('Mietwerkstatt: Preise ohne doppelte Preiskarten, Tippfehler behoben', async ({ page }) => {
     await page.goto('/mietwerkstatt/');
     await expect(page.locator('.price-card')).toHaveCount(0);
-    await expect(page.locator('table.prices')).toBeVisible();
+    // Aufbau wie auf der alten Seite: drei Tabellen mit Sprungmarken, Transporter-Plätze für 20 €.
+    await expect(page.locator('table.prices caption')).toHaveText(['Plätze', 'Werkzeug und Entsorgung', 'Stellplätze']);
+    for (const ziel of ['#plaetze', '#werkzeug', '#stellplaetze', '#bedingungen']) await expect(page.locator(ziel)).toHaveCount(1);
+    await expect(page.locator('#plaetze tr', { hasText: 'Hebebühnenplatz für Transporter' })).toContainText('20,00 €');
+    await expect(page.locator('#faq details')).toHaveCount(10);
     const html = await page.content();
     expect(html).not.toContain('selbst ?');
     expect(html).not.toContain('incl. MWST');
@@ -261,10 +267,10 @@ test.describe('Am Handy', () => {
     await expect(page.locator('.picker__top a[href="tel:+491784444510"]')).toBeInViewport();
   });
 
-  test('Startseite: alle vier Kategorien liegen im ersten Bildschirm', async ({ page }) => {
+  test('Startseite: alle drei Kategorien liegen im ersten Bildschirm', async ({ page }) => {
     await page.goto('/');
     const kategorien = page.locator('a.kat');
-    await expect(kategorien).toHaveCount(4);
+    await expect(kategorien).toHaveCount(3);
     for (const kat of await kategorien.all()) await expect(kat).toBeInViewport({ ratio: 1 });
   });
 
