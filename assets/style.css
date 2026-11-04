@@ -434,7 +434,7 @@ p{margin:0 0 1em}
   .prices td{border:0;padding:2px 0;text-align:left!important;white-space:normal}
   .prices td:nth-child(1){color:var(--text);font-weight:600}
   .prices td:nth-child(2)::before{content:"Einheit: ";color:var(--faint);font-weight:500}
-  .prices td.num::before{content:"Euro: ";color:var(--faint);font-weight:500}
+  .prices td.num::before{content:"Preis: ";color:var(--faint);font-weight:500}
   .prices td[colspan]{font-weight:500;color:var(--muted)}
   .prices td[colspan]::before{content:none}
   .shot img,.shot--tall img{height:210px}
@@ -469,31 +469,6 @@ p{margin:0 0 1em}
   .js .reveal{opacity:1;transform:none}
   .faq details::details-content{transition:none!important}
   @view-transition{navigation:none}
-}
-
-/* Reifenwechsel & Auswuchten */
-.tires{align-items:center}
-.tires h2{margin-top:0}
-.tires__price{color:var(--text)!important;font-weight:600}
-.tires__price a{color:var(--accent);text-decoration:none;white-space:nowrap}
-.tires__price a:hover{text-decoration:underline}
-.tire-photo{position:relative;margin:0;border-radius:28px;padding:clamp(14px,2.4vw,26px) clamp(14px,2.4vw,26px) 12px;background:#fff;border:1px solid rgba(255,210,31,.38);box-shadow:0 0 0 6px rgba(255,210,31,.06),0 0 80px -22px rgba(255,210,31,.55),0 30px 60px -34px rgba(0,0,0,.85)}
-.tire-photo img{display:block;width:100%;height:auto;border-radius:16px}
-.tire-photo figcaption{margin-top:4px;text-align:center;font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#55534c}
-.tire-specs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:48px}
-.tire-specs h3{margin-top:0}
-.tire-specs .equip li{background:var(--s3)}
-.card--feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:40px;align-items:center}
-.card--feature .btn{margin-top:8px;color:var(--accent-ink)}
-.tire-photo--sm{padding:12px;border-radius:20px;box-shadow:0 0 0 5px rgba(255,210,31,.06),0 0 60px -22px rgba(255,210,31,.5)}
-.tire-photo--sm img{border-radius:12px}
-@media (max-width:1000px){
-  .card--feature{grid-template-columns:1fr;gap:22px}
-  .tire-photo--sm{max-width:420px}
-}
-@media (max-width:640px){
-  .tire-specs{grid-template-columns:1fr;margin-top:32px}
-  .tires .cta .btn{width:100%}
 }
 
 /* Eigene Inhalte der Ankaufseiten (2026-10-29): Themenabschnitt mit Liste und Textblöcke mit Zwischenüberschriften.
@@ -581,8 +556,8 @@ p{margin:0 0 1em}
 .picker__knoepfe{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
 .picker__knoepfe .btn--ghost{border-color:rgba(250,250,250,.4);background:rgba(6,7,12,.35)}
 .picker__knoepfe .btn--ghost:hover{border-color:var(--text);background:rgba(255,255,255,.08)}
-/* Die vier Kategorien: eine Reihe wie die Kennzahlen im Vorbild, groß gesetzt, mit Linie dazwischen. */
-.kats{width:100%;max-width:1180px;margin-top:clamp(36px,8vh,88px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line-strong)}
+/* Die drei Kategorien: eine Reihe wie die Kennzahlen im Vorbild, groß gesetzt, mit Linie dazwischen. */
+.kats{width:100%;max-width:1180px;margin-top:clamp(36px,8vh,88px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line-strong)}
 .kat{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px 14px 20px;text-decoration:none;color:var(--text);border-right:1px solid var(--line);transition:background .25s var(--ease)}
 .kat:last-child{border-right:0}
 .kat::after{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .25s var(--ease)}
@@ -613,17 +588,16 @@ p{margin:0 0 1em}
 .picker__main h1.picker__in{animation-delay:.06s}
 .picker__main .lead.picker__in{animation-delay:.12s}
 .picker__knoepfe.picker__in{animation-delay:.18s}
-/* Die vier Kategorien kommen einzeln nacheinander, 50 ms Abstand (Rezept "Stagger a group entrance"). */
+/* Die drei Kategorien kommen einzeln nacheinander, 50 ms Abstand (Rezept "Stagger a group entrance"). */
 @keyframes kat-in{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}
 .kats.picker__in{animation:none}
 .kat{animation:kat-in .3s var(--ease) backwards;animation-delay:.24s}
 .kat:nth-child(2){animation-delay:.29s}
 .kat:nth-child(3){animation-delay:.34s}
-.kat:nth-child(4){animation-delay:.39s}
 @media (max-width:860px){
+  /* Mietwerkstatt über die ganze Breite, Autoankauf und Autoteile darunter nebeneinander. */
   .kats{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .kat:nth-child(2){border-right:0}
-  .kat:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .kat:first-child{grid-column:1/-1;border-right:0;border-bottom:1px solid var(--line)}
 }
 @media (max-width:640px){
   .picker__top{padding-top:16px;flex-wrap:wrap;row-gap:10px}
@@ -670,4 +644,64 @@ html:has(.catbar){scroll-padding-top:calc(var(--nav-h) + 70px)}
   .catpill{flex:1 1 0;min-width:0;text-align:center;font-size:.84rem;padding:7px 4px}
   .catpill__l{display:none}
   .catpill__s{display:inline}
+}
+
+/* Mietwerkstatt im Aufbau der alten Seite (2026-10-29): Preis im Kopf, Sprungmarken zur Preisliste,
+   Tabellen mit Beschreibungszeile, Seitenspalte mit Anfrage und Öffnungszeiten, Datenblatt der Lackierkabine. */
+.hero__price{display:flex;flex-direction:column;gap:6px;margin:28px 0 0}
+.hero__price strong{font:600 clamp(2.4rem,4.6vw,3.5rem)/1 var(--display);letter-spacing:-.034em;color:var(--text);font-variant-numeric:tabular-nums}
+.hero__price span{color:var(--muted);font-size:.95rem}
+.jumps ul{list-style:none;margin:0 0 32px;padding:0;display:flex;flex-wrap:wrap;gap:10px}
+.jumps a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line-strong);background:rgba(255,255,255,.03);color:var(--text);text-decoration:none;font-weight:500;font-size:.92rem;transition:color .2s var(--ease),border-color .2s var(--ease)}
+.jumps a:hover{border-color:rgba(255,210,31,.5);color:var(--accent)}
+.price-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:48px;align-items:start}
+.price-layout__main{display:grid;gap:40px;min-width:0}
+.price-layout__aside{position:sticky;top:calc(var(--nav-h) + 78px);display:grid;gap:16px}
+.price-block .price-notes{margin-top:12px;font-size:.92rem}
+.price-block>h3{margin-bottom:16px}
+.prices td small{display:block;margin-top:3px;color:var(--muted);font-size:.84rem;font-weight:400;line-height:1.4}
+.rules{list-style:none;margin:0;display:grid;gap:12px}
+.rules li{position:relative;padding-left:22px;color:var(--muted)}
+.rules li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.side-card{padding:24px}
+.side-card h3{margin:0 0 .4em;font-size:1.2rem}
+.side-card__tel{display:block;margin:14px 0 16px;font:600 1.7rem/1.1 var(--display);letter-spacing:-.03em;color:var(--text)!important;text-decoration:none;font-variant-numeric:tabular-nums}
+.side-card__tel:hover{color:var(--accent)!important}
+.side-card__actions{display:grid;gap:10px}
+.side-card__actions .btn{width:100%}
+.side-card .btn--accent{color:var(--accent-ink)}
+.side-card .btn--wa{color:#06210f}
+.pill--badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 10px;background:rgba(255,255,255,.03);color:var(--text);font-weight:600;font-size:.86rem;margin:4px 0 12px}
+.hours{margin:0 0 12px;font-size:.95rem}
+.hours div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--line)}
+.hours dt{color:var(--muted)}
+.hours dd{margin:0;color:var(--text);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.section__note{margin:28px 0 0;color:var(--muted);max-width:46rem}
+.section__note a{color:var(--text);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.section__note a:hover{color:var(--accent)}
+.equip--narrow{max-width:920px}
+.photo{margin:0;border-radius:24px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--hi),var(--shadow)}
+.photo img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover}
+.datasheet{margin-top:28px;padding:24px}
+.datasheet h3{margin:0;font-size:1.15rem}
+.datasheet .info{margin:16px 0 0}
+.datasheet dd{font:600 1.35rem/1.2 var(--display);letter-spacing:-.02em}
+.shots--4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.form h2{margin:0;font-size:clamp(1.5rem,2.2vw,1.85rem)}
+.contact__tel{margin:4px 0 6px}
+.contact__tel a{font:600 clamp(1.9rem,3vw,2.4rem)/1.1 var(--display);letter-spacing:-.03em;color:var(--text);text-decoration:none;font-variant-numeric:tabular-nums}
+.contact__tel a:hover{color:var(--accent)}
+.contact__info .hours{max-width:420px}
+.anfahrt{display:grid;gap:36px}
+.anfahrt h3{margin:0 0 .5em;font-size:1.2rem}
+.anfahrt p{color:var(--muted);margin:0 0 12px}
+.anfahrt .hours{max-width:420px}
+@media (max-width:1000px){
+  .price-layout{grid-template-columns:1fr}
+  .price-layout__aside{position:static;grid-template-columns:1fr 1fr}
+  .shots--4{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .price-layout__aside,.shots--4{grid-template-columns:1fr}
+  .side-card,.datasheet{padding:20px}
 }
