@@ -87,7 +87,12 @@ test.describe('Am Schreibtisch', () => {
     await page.goto('/mietwerkstatt/#kontakt');
     const form = page.locator('#bookingForm');
     await form.getByRole('button', { name: /Per WhatsApp senden/ }).click();
-    await expect(form.locator('.form__status')).toContainText('Pflichtfelder');
+    await expect(form.locator('.form__status')).toContainText('markierten Felder');
+    // Der Fehler steht als Text am Feld, nicht nur als roter Rand, und das Feld verweist darauf.
+    const telefon = form.locator('input[name="telefon"]');
+    await expect(telefon).toHaveAttribute('aria-invalid', 'true');
+    await expect(form.locator('.feld-fehler').first()).toBeVisible();
+    expect(await telefon.evaluate((f) => document.getElementById(f.getAttribute('aria-describedby'))?.textContent)).toContain('Bitte füllen Sie');
     expect(await page.evaluate(() => window.__wa.length)).toBe(0);
 
     await form.locator('select[name="anliegen"]').selectOption('Lackierkabine');
@@ -101,6 +106,59 @@ test.describe('Am Schreibtisch', () => {
     expect(text).toContain('Lackierkabine');
     expect(text).toContain('0170 1234567');
     await expect(form.locator('.form__status')).toContainText('Rufen Sie an');
+  });
+
+  test('Ankaufsanfrage: genauer Kilometerstand geht durch, Fehler stehen am Feld, die Nachricht enthält alles', async ({ page }) => {
+    await page.addInitScript(() => { window.__wa = []; window.open = (url) => { window.__wa.push(String(url)); return null; }; });
+    await page.goto('/autoankauf/skoda/octavia/');
+    const form = page.locator('#angebot');
+    await expect(form.locator('.leadform__head')).toContainText('WhatsApp');
+    await expect(form.locator('input[name="marke"]')).toHaveValue('Skoda');
+    await expect(form.locator('input[name="modell"]')).toHaveValue('Octavia');
+    // Vorher ließ step="1000" nur glatte Tausender durch.
+    const km = form.locator('input[name="km"]');
+    await km.fill('187k');
+    await form.getByRole('button', { name: /Weiter/ }).first().click();
+    await expect(km).toHaveAttribute('aria-invalid', 'true');
+    await expect(form.locator('.feld-fehler')).toContainText('nur Ziffern');
+    await km.fill('187432');
+    await expect(form.locator('.feld-fehler')).toHaveCount(0);
+    await form.getByRole('button', { name: /Weiter/ }).first().click();
+    await form.locator('label.chip', { hasText: 'Nicht fahrbereit' }).click();
+    await form.locator('textarea[name="beschreibung"]').fill('Springt nicht an');
+    await expect(form.locator('.fstep.is-active')).toContainText('schon ein Angebot');
+    await form.locator('.fstep.is-active').getByRole('button', { name: /Weiter/ }).click();
+    await expect(form.locator('.fstep.is-active')).toContainText('Fotos vom Fahrzeug');
+    await expect(form.locator('input[name="whatsapp_ok"]')).toHaveCount(0);
+    await form.locator('input[name="telefon"]').fill('0170 1234567');
+    await form.locator('input[name="datenschutz"]').check();
+    await form.getByRole('button', { name: /Per WhatsApp senden/ }).click();
+    const urls = await page.evaluate(() => window.__wa);
+    expect(urls).toHaveLength(1);
+    const text = decodeURIComponent(urls[0].split('text=')[1]);
+    expect(text).toContain('Fahrzeug: Skoda Octavia');
+    expect(text).toContain('Kilometerstand: 187.432');
+    expect(text).toContain('Zustand: Nicht fahrbereit');
+    expect(text).toContain('Was ist passiert: Springt nicht an');
+    await expect(form.locator('.form__status')).toContainText('Bitte tippen Sie dort nur noch auf Senden');
+  });
+
+  test('Ankaufseiten: keine Gedankenstriche in Überschriften, Abholung nur nach Absprache, Wege zu den Zustandsseiten', async ({ page }) => {
+    for (const pfad of ['/autoankauf/', '/autoankauf/vw/', '/autoankauf/motorschaden/', '/autoankauf/opel/astra/']) {
+      await page.goto(pfad);
+      expect(await page.locator('h1').textContent(), pfad).not.toContain('–');
+      await expect(page.locator('.ticks'), pfad).toContainText('Abholung nach Absprache');
+      await expect(page.locator('main'), pfad).not.toContainText('kannst du');
+    }
+    await page.goto('/autoankauf/');
+    await expect(page.locator('.faelle a[href$="/ohne-tuev/"]')).toBeVisible();
+    // Ablauf und Preis kommen vor den 55 Modellkarten.
+    const lage = await page.evaluate(() => ['#ablauf', '#modelle'].map((s) => document.querySelector(s).getBoundingClientRect().top));
+    expect(lage[0]).toBeLessThan(lage[1]);
+    await page.goto('/autoankauf/skoda/octavia/');
+    for (const ziel of ['motorschaden', 'unfallwagen', 'ohne-tuev']) await expect(page.locator(`main a[href$="/autoankauf/${ziel}/"]`).first()).toBeAttached();
+    // Nummerierte Checklisten erscheinen als Liste, nicht als ein Absatz "1. … 2. …".
+    await expect(page.locator('.textblock ol.schritte li')).toHaveCount(6);
   });
 
   test('Teileanfrage: Ausgefülltes Formular öffnet WhatsApp', async ({ page }) => {
@@ -262,9 +320,23 @@ test.describe('Am Handy', () => {
     }
   });
 
-  test('Startseite: Anruf-Knopf oben sichtbar', async ({ page }) => {
+  test('Startseite: Anruf-Knopf oben sichtbar, Öffnungszeiten stehen dabei', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.picker__top a[href="tel:+491784444510"]')).toBeInViewport();
+    await expect(page.locator('.picker__top .js-open')).toContainText('Mo–Fr 9:30–18:00');
+    await expect(page.locator('.picker__top .js-open')).toBeInViewport({ ratio: 0.99 });
+    expect(await ueberlauf(page)).toBeLessThanOrEqual(0);
+  });
+
+  test('Ankaufseite: Anrufen ist in der Leiste unten der gelbe Hauptknopf, der Kopf-Knopf hat einen Namen', async ({ page }) => {
+    await page.goto('/autoankauf/vw/golf/');
+    const haupt = page.locator('.stickybar .stickybar__main');
+    await expect(haupt).toBeVisible();
+    await expect(haupt).toHaveAttribute('href', 'tel:+491784444510');
+    await expect(haupt).toContainText('0178 4444510');
+    await expect(page.getByRole('link', { name: 'Anrufen: 0178 4444510' })).toBeVisible();
+    const hoehe = await page.locator('.stickybar a').evaluateAll((a) => Math.min(...a.map((e) => e.getBoundingClientRect().height)));
+    expect(hoehe).toBeGreaterThanOrEqual(44);
   });
 
   test('Startseite: alle drei Kategorien liegen im ersten Bildschirm', async ({ page }) => {

@@ -67,18 +67,45 @@ $$("[data-wa-missing]").forEach(a => a.addEventListener("click", ev => {
   alert("Vorschau: Die WhatsApp-Nummer ist noch nicht hinterlegt ([WhatsApp-Nummer]).");
 }));
 
-// Validierung
+// Validierung: Fehler stehen als Text direkt am Feld (nicht nur als roter Rand) und werden vorgelesen.
+// Eigener Text pro Feld über data-fehler, sonst ein allgemeiner. Der Text verschwindet, sobald das Feld stimmt.
+let fehlerNr = 0;
+function fehlerText(f) {
+  if (f.validity.valueMissing) return f.type === "checkbox" ? "Bitte setzen Sie hier den Haken." : "Bitte füllen Sie dieses Feld aus.";
+  return f.dataset.fehler || "Bitte prüfen Sie diese Angabe.";
+}
+function zeigeFehler(f, text) {
+  const ort = f.closest("label") || f.parentElement;
+  let el = ort.querySelector(":scope > .feld-fehler");
+  if (!text) { el?.remove(); f.removeAttribute("aria-describedby"); return; }
+  if (!el) {
+    el = document.createElement("span");
+    el.className = "feld-fehler";
+    el.id = `feld-fehler-${++fehlerNr}`;
+    ort.append(el);
+  }
+  el.textContent = text;
+  f.setAttribute("aria-describedby", el.id);
+}
 function validate(scope) {
   let ok = true, first = null;
   $$("input,select,textarea", scope).forEach(f => {
     if (!f.willValidate) return;
     const bad = f.type === "checkbox" ? (f.required && !f.checked) : !f.checkValidity();
     f.setAttribute("aria-invalid", bad ? "true" : "false");
+    zeigeFehler(f, bad ? fehlerText(f) : "");
     if (bad) { ok = false; first = first || f; }
   });
   first?.focus();
   return ok;
 }
+// Sobald ein markiertes Feld stimmt, verschwinden roter Rand und Text.
+document.addEventListener("input", ev => {
+  const f = ev.target;
+  if (!(f instanceof HTMLElement) || f.getAttribute("aria-invalid") !== "true") return;
+  const bad = f.type === "checkbox" ? (f.required && !f.checked) : !f.checkValidity();
+  if (!bad) { f.setAttribute("aria-invalid", "false"); zeigeFehler(f, ""); }
+});
 
 // Mehrstufiges Formular + Vorbelegung (Template-Daten und ?marke=&modell=&zustand=)
 $$(".js-steps").forEach(form => {
@@ -119,6 +146,7 @@ const WA_LABELS = {
   baujahr: "Baujahr",
   km: "Kilometerstand",
   zustand: "Zustand",
+  beschreibung: "Was ist passiert",
   kraftstoff: "Kraftstoff",
   getriebe: "Getriebe",
   preisvorstellung: "Preisvorstellung",
@@ -136,10 +164,11 @@ function whatsAppMessage(form, data) {
   const lines = [WA_TITLES[form.dataset.name] || "Neue Anfrage über die Website", ""];
   const fahrzeug = [fieldText(data, "marke"), fieldText(data, "modell")].filter(Boolean).join(" ");
   if (fahrzeug) lines.push(`Fahrzeug: ${fahrzeug}`);
-  for (const key of ["anliegen", "baujahr", "km", "zustand", "kraftstoff", "getriebe", "preisvorstellung", "name", "telefon", "plz", "nachricht"]) {
+  for (const key of ["anliegen", "baujahr", "km", "zustand", "beschreibung", "kraftstoff", "getriebe", "preisvorstellung", "name", "telefon", "plz", "nachricht"]) {
     let val = fieldText(data, key);
     if (!val) continue;
-    if (key === "km" && /^\d+$/.test(val)) val = Number(val).toLocaleString("de-DE");
+    // Kilometerstand darf mit Punkten oder Leerzeichen kommen (187.432, 187 432), in der Nachricht steht er einheitlich.
+    if (key === "km" && /^[\d .]+$/.test(val)) val = Number(val.replace(/[ .]/g, "")).toLocaleString("de-DE");
     const label = key === "nachricht" && form.dataset.name === "Teileanfrage" ? "Fahrzeug und Teil" : WA_LABELS[key];
     lines.push(`${label}: ${val}`);
   }
@@ -195,7 +224,7 @@ $$(".js-form").forEach(form => form.addEventListener("submit", ev => {
   ev.preventDefault();
   const status = $(".form__status", form);
   const scope = $(".fstep.is-active", form) || form;
-  if (!validate(scope)) { melde(status, "Bitte füllen Sie alle Pflichtfelder (*) aus."); return; }
+  if (!validate(scope)) { melde(status, "Bitte prüfen Sie die markierten Felder."); return; }
   const data = new FormData(form);
   if (String(data.get("website") || "").trim()) return;
   const number = String(CFG.whatsapp || "491784444510").replace(/\D/g, "");
@@ -205,7 +234,7 @@ $$(".js-form").forEach(form => form.addEventListener("submit", ev => {
     data.append("formular", form.dataset.name || "Anfrage");
     fetch(`https://formspree.io/f/${CFG.formspree}`, { method: "POST", body: data, headers: { Accept: "application/json" } }).catch(() => {});
   }
-  melde(status, `WhatsApp öffnet sich – bitte dort nur noch auf Senden tippen. Kein WhatsApp? Rufen Sie an: ${CFG.phone || "0178 4444510"}`);
+  melde(status, `WhatsApp öffnet sich. Bitte tippen Sie dort nur noch auf Senden. Kein WhatsApp? Rufen Sie an: ${CFG.phone || "0178 4444510"}`);
 }));
 
 $$(".js-year").forEach(el => el.textContent = new Date().getFullYear());

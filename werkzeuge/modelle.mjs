@@ -67,16 +67,26 @@ const inline = (t, P) => esc(t)
 
 function markdown(text, P) {
   const html = [];
-  let absatz = [], liste = null;
+  let absatz = [], liste = null, nummeriert = false;
   const schliesse = () => {
     if (absatz.length) { html.push(`<p>${inline(absatz.join(' '), P)}</p>`); absatz = []; }
-    if (liste) { html.push(`<ul class="equip equip--1">${liste.map((l) => `<li>${inline(l, P)}</li>`).join('')}</ul>`); liste = null; }
+    if (liste) {
+      const punkte = liste.map((l) => `<li>${inline(l, P)}</li>`).join('');
+      html.push(nummeriert ? `<ol class="schritte">${punkte}</ol>` : `<ul class="equip equip--1">${punkte}</ul>`);
+      liste = null;
+    }
   };
   for (const zeile of text.split('\n')) {
     let m;
     if (!zeile.trim()) schliesse();
     else if ((m = zeile.match(/^(#{2,3}) (.+)$/))) { schliesse(); html.push(`<h${m[1].length}>${inline(m[2], P)}</h${m[1].length}>`); }
-    else if ((m = zeile.match(/^[-*] (.+)$/))) { if (absatz.length) schliesse(); (liste ??= []).push(m[1]); }
+    // Aufzählung ("- ") und nummerierte Liste ("1. "). Wechselt die Art, beginnt eine neue Liste.
+    else if ((m = zeile.match(/^(?:([-*])|\d+\.) (.+)$/))) {
+      const nr = !m[1];
+      if (absatz.length || (liste && nr !== nummeriert)) schliesse();
+      nummeriert = nr;
+      (liste ??= []).push(m[2]);
+    }
     else if (liste && /^\s+\S/.test(zeile)) liste[liste.length - 1] += ' ' + zeile.trim();
     else { if (liste) schliesse(); absatz.push(zeile.trim()); }
   }
@@ -131,9 +141,14 @@ function modellseite(m) {
   const krumen = [['Start', DOMAIN], ['Autoankauf', DOMAIN + 'autoankauf/'], ...(marke.seite ? [[marke.name, DOMAIN + `autoankauf/${m.markeSlug}/`]] : []), [m.modell, url]];
   const breadcrumb = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: krumen.map(([name, item], i) => ({ '@type': 'ListItem', position: i + 1, name, item })) };
   const hintergrund = foto ? `${P}assets/modelle/${m.schluessel}.webp` : `${P}assets/werkstatt/lackierkabine.webp`;
+  // Marke und Modell stehen auch ohne JavaScript im Formular, die Vorschläge zeigen die Modelle dieser Marke.
+  const vorschlaege = MODELLE.filter((x) => x.markeSlug === m.markeSlug).map((x) => `<option value="${esc(x.modell)}">`).join('');
   const form = FORM
     .replace(/data-prefill-marke="[^"]*"/, `data-prefill-marke="${esc(marke.form)}" data-prefill-modell="${esc(m.modell)}"`)
-    .replace(/data-name="[^"]*"/, 'data-name="Autoankauf-Anfrage"');
+    .replace(/data-name="[^"]*"/, 'data-name="Autoankauf-Anfrage"')
+    .replace(/(<input name="marke"[^>]*?) value="[^"]*"/, `$1 value="${esc(marke.form)}"`)
+    .replace(/<input name="modell"/, `<input name="modell" value="${esc(m.modell)}"`)
+    .replace(/<datalist id="dl-modelle">[\s\S]*?<\/datalist>/, `<datalist id="dl-modelle">${vorschlaege}</datalist>`);
   const rechts = foto
     ? `<figure class="modellfoto"><img src="${P}assets/modelle/${m.schluessel}.webp" alt="${esc(foto.motiv)}" width="1200" height="800" loading="lazy" decoding="async"><figcaption>Beispielfoto, kein Fahrzeug aus unserem Betrieb. Foto: ${esc(foto.urheber)}, ${esc(foto.lizenz)}, <a href="${esc(foto.quelle)}" target="_blank" rel="noopener">Wikimedia Commons<span class="sr-only"> (öffnet in neuem Fenster)</span></a>${foto.bearbeitet ? `, ${esc(foto.bearbeitet)}` : ''}.</figcaption></figure>`
     : `<div class="modellplakette">${logo(m.markeSlug)}<p>${esc(marke.name)}</p><p class="modellplakette__name">${esc(m.modell)}</p></div>`;
@@ -161,7 +176,7 @@ ${KOPFZEILE}
   <div class="wrap lp-hero__inner">
     <div class="lp-hero__copy">
       <nav class="crumbs" aria-label="Brotkrumen"><a href="${P}">Start</a> / <a href="${P}autoankauf/">Autoankauf</a> / ${markeKrume} / <span>${esc(m.modell)}</span></nav>
-      <h1>${esc(marke.name)} ${esc(m.modell)} verkaufen – <span class="hl">auch mit Schaden</span></h1>
+      <h1>${esc(marke.name)} ${esc(m.modell)} verkaufen: <span class="hl">fahrbereit oder mit Schaden</span></h1>
       <p class="lead">${esc(m.einleitung)}</p>
       ${TICKS}
       ${CTA}
@@ -173,7 +188,7 @@ ${KOPFZEILE}
 <section class="section section--alt" id="baureihen"><div class="wrap split">
   <div class="reveal"><p class="kicker">${esc(marke.name)} ${esc(m.modell)} Ankauf</p><h2>Diese Baureihen kaufen wir an</h2>
   <ul class="equip">${m.baureihen.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
-  <p>Auch mit Mängeln, Unfallschaden oder Motorschaden. Fragen Sie auch mit einer Variante an, die hier nicht steht.</p>
+  <p>Fahrbereit oder mit Mängeln, mit <a href="${P}autoankauf/unfallwagen/">Unfallschaden</a>, mit <a href="${P}autoankauf/motorschaden/">Motorschaden</a> oder <a href="${P}autoankauf/ohne-tuev/">ohne neuen TÜV</a>. Fragen Sie auch mit einer Variante an, die hier nicht steht.</p>
   <a class="btn btn--accent" href="#angebot">Angebot anfordern</a></div>
   <div class="reveal">${rechts}</div>
 </div></section>
@@ -195,6 +210,7 @@ ${(m.faq || []).map((f) => `    <details class="reveal"><summary>${esc(f.frage)}
   <div class="band reveal"><div><h2>${esc(marke.name)} ${esc(m.modell)} verkaufen?</h2><p>Rufen Sie an: 0178 4444510. Am Telefon ist der Inhaber.</p></div>
   <div class="cta"><a class="btn btn--dark btn--lg" href="tel:+491784444510">0178 4444510</a><a class="btn btn--dark-ghost btn--lg" href="#angebot">Angebot anfordern</a></div></div>
   <nav class="related" aria-label="Weitere Modelle">${marke.seite ? `<a href="${P}autoankauf/${m.markeSlug}/">Alle ${esc(marke.name)} Modelle</a>` : ''}${links.map((x) => `<a href="${P}${x.pfad}">${esc(MARKEN[x.markeSlug].name)} ${esc(x.modell)} verkaufen</a>`).join('')}<a href="${P}autoankauf/">Alle Marken</a></nav>
+  <nav class="related" aria-label="Ankauf nach Zustand"><a href="${P}autoankauf/motorschaden/">Auto mit Motorschaden verkaufen</a><a href="${P}autoankauf/unfallwagen/">Unfallwagen verkaufen</a><a href="${P}autoankauf/ohne-tuev/">Auto ohne TÜV verkaufen</a><a href="${P}autoankauf/transporter-lkw/">Transporter und Lkw verkaufen</a></nav>
 </div></section>
 ${KONTAKT}
 ${FUSS}
