@@ -39,6 +39,7 @@
   --text:#fafafa; --muted:rgba(250,250,250,.68); --faint:rgba(250,250,250,.55);
   --accent:#ffd21f; --accent-ink:#141414; --accent-soft:rgba(255,210,31,.14);
   --cyan:#38d6e9;
+  --fehler:#ff6b5a;
   --wrap:1320px;
   /* Markenauftritt (2026-11-04): kleine Rundungen statt Pillen, wie bei Automarken */
   --r-knopf:4px; --r-karte:6px; --r-feld:4px; --radius:var(--r-karte);
@@ -358,9 +359,18 @@ p{margin:0 0 1em}
 .leadform .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .leadform label{display:grid;gap:6px;font-weight:550;font-size:.86rem}
 .leadform .label{font-weight:550;font-size:.86rem;margin:0}
-.leadform input:not([type=checkbox]),.leadform select{font:inherit;font-weight:400;color:var(--text);background:#0a0b0e;border:1px solid var(--line-strong);border-radius:var(--r-feld);padding:12px 14px;width:100%}
-.leadform input:focus,.leadform select:focus{outline:none;border-color:rgba(255,210,31,.75);box-shadow:0 0 0 3px rgba(255,210,31,.18)}
-.leadform [aria-invalid="true"]{border-color:#ff6b5a!important}
+.leadform input:not([type=checkbox]),.leadform select,.leadform textarea{font:inherit;font-weight:400;color:var(--text);background:#0a0b0e;border:1px solid var(--line-strong);border-radius:var(--r-feld);padding:12px 14px;width:100%}
+.leadform textarea{resize:vertical;min-height:4.5em}
+.leadform input:focus,.leadform select:focus,.leadform textarea:focus{outline:none;border-color:rgba(255,210,31,.75);box-shadow:0 0 0 3px rgba(255,210,31,.18)}
+.leadform [aria-invalid="true"]{border-color:var(--fehler)!important}
+/* Fehler als Text direkt unter dem Feld (setzt main.js), nicht nur als roter Rand */
+.feld-fehler{display:block;color:var(--fehler);font-size:.86rem;font-weight:500;line-height:1.35}
+.leadform__head a{white-space:nowrap}
+/* Direkt zu Ihrem Fall: Zustandsseiten gleich unter den Häkchen der Ankaufseite */
+.faelle{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:20px 0 0}
+.faelle__label{width:100%;color:var(--muted);font-size:.92rem;font-weight:500}
+.faelle a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--line-strong);border-radius:var(--r-knopf);background:rgba(6,7,12,.5);color:var(--text);text-decoration:none;font-weight:550;font-size:.94rem;transition:border-color .15s var(--ease),color .15s var(--ease)}
+@media (hover:hover) and (pointer:fine){.faelle a:hover{border-color:var(--accent);color:var(--accent)}}
 .leadform .check{display:flex;gap:10px;align-items:flex-start;font-weight:400;color:var(--muted)}
 .leadform .check input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
 .leadform .btn--ghost{color:var(--text);border-color:var(--line-strong);background:transparent}
@@ -406,8 +416,10 @@ p{margin:0 0 1em}
   .callfab{display:grid}
   .footer{padding-bottom:104px}
   .page-lp .footer{padding-bottom:124px}
-  .stickybar{display:grid;grid-template-columns:1fr 1fr 1.4fr;position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(6,7,12,.92);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:8px}
-  .stickybar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;font-size:.75rem;font-weight:600;border-radius:var(--r-feld);padding:8px 4px;background:var(--s4);color:var(--text)}
+  /* Seit 2026-11-05: Anrufen ist der Hauptweg (gelb, breit, mit Nummer), das Formular steht daneben. */
+  .stickybar{display:grid;grid-template-columns:1.4fr 1fr 1fr;position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(6,7,12,.92);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:8px}
+  .stickybar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;text-decoration:none;font-size:.8125rem;font-weight:600;line-height:1.2;text-align:center;border-radius:var(--r-feld);padding:8px 4px;background:var(--s4);color:var(--text)}
+  .stickybar__nr{font-size:.75rem;font-weight:600;font-variant-numeric:tabular-nums}
   .stickybar svg{width:18px;height:18px;fill:currentColor}
   .stickybar__wa{color:#3fe07a}
   .stickybar__main{background:var(--accent)!important;color:var(--accent-ink)!important}
@@ -476,6 +488,9 @@ p{margin:0 0 1em}
 .textblock h2{font-size:clamp(1.6rem,2.6vw,2.1rem)}
 .textblock h2:not(:first-child){margin-top:1.6em}
 .textblock p{color:var(--muted);font-size:1.05rem}
+.textblock ol.schritte{display:grid;gap:.5em;margin:1em 0 1.25em;padding-left:1.5em;color:var(--muted);font-size:1.05rem}
+.textblock ol.schritte li{padding-left:.25em}
+.textblock ol.schritte li::marker{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
 
 /* Modell-Finder und Modellkarten (werkzeuge/modelle.mjs): Suche Marke und Modell, Markenreihe mit Logos, Raster wie bei
    einer Händlerseite (Vorbild: Envato-Vorlage "Autriva", Kevin 2026-10-29). Jede Karte führt auf ihre Modellseite. */
@@ -601,7 +616,7 @@ p{margin:0 0 1em}
   /* Am Handy: Logo und Anruf in einer Zeile, der Öffnungsstatus darunter. */
   .picker__call{margin-left:auto}
   .picker__top .pill{order:3;margin-left:0}
-  .picker .pill{font-size:.78rem}
+  .picker .pill{font-size:.78rem;white-space:normal;line-height:1.35}
   .picker__main{padding-top:20px}
   .picker__main h1{font-size:clamp(2.75rem,13vw,3.6rem)}
   .picker__main .lead{font-size:1rem}

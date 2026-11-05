@@ -4,7 +4,7 @@ modell: "Golf"
 markeSlug: "vw"
 modellSlug: "golf"
 title: "VW Golf verkaufen: auch defekt, Abholung NRW | Autohobby"
-description: "VW Golf verkaufen: Ankauf von Golf 4 bis 8, Plus und Variant, auch mit Steuerketten- oder DSG-Schaden. Standort Düsseldorf-Oberbilk, Abholung in NRW."
+description: "VW Golf verkaufen: Ankauf von Golf 4 bis 7, Plus und Variant, auch mit Steuerketten- oder DSG-Schaden. Standort Düsseldorf-Oberbilk, Abholung in NRW."
 einleitung: "Wir kaufen Ihren VW Golf an, egal welche Baureihe. Auch mit Steuerkettenschaden, DSG-Schaden oder Unfallschaden."
 baureihen:
   - "Golf IV (1J)"
