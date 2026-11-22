@@ -47,11 +47,11 @@ test.describe('Am Schreibtisch', () => {
     });
   }
 
-  test('Startseite: vier Kategorien führen auf ihre Seiten, Anruf oben', async ({ page }) => {
+  test('Startseite: drei Kategorien führen auf ihre Seiten, Anruf oben', async ({ page }) => {
     test.slow(); // fünf Seitenaufrufe, WebKit braucht dafür neben anderen Tests über 30 s
     await page.goto('/');
     await expect(page.locator('.picker__top a[href="tel:+491784444510"]')).toBeVisible();
-    for (const [name, ziel] of [['Mietwerkstatt', '/mietwerkstatt/'], ['Autoankauf', '/autoankauf/'], ['Reifenwechsel', '/mietwerkstatt/#reifenwechsel'], ['Autoteile', '/autoteile/']]) {
+    for (const [name, ziel] of [['Mietwerkstatt', '/mietwerkstatt/'], ['Autoankauf', '/autoankauf/'], ['Reifenwechsel', '/mietwerkstatt/#reifenwechsel']]) {
       await page.goto('/');
       await page.locator('a.kat', { hasText: name }).click();
       await expect.poll(() => pfadMitAnker(page)).toBe(ziel);
@@ -261,10 +261,10 @@ test.describe('Am Handy', () => {
     await expect(page.locator('.picker__top a[href="tel:+491784444510"]')).toBeInViewport();
   });
 
-  test('Startseite: alle vier Kategorien liegen im ersten Bildschirm', async ({ page }) => {
+  test('Startseite: alle drei Kategorien liegen im ersten Bildschirm', async ({ page }) => {
     await page.goto('/');
     const kategorien = page.locator('a.kat');
-    await expect(kategorien).toHaveCount(4);
+    await expect(kategorien).toHaveCount(3);
     for (const kat of await kategorien.all()) await expect(kat).toBeInViewport({ ratio: 1 });
   });
 
