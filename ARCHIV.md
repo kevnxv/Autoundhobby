@@ -32,6 +32,8 @@ Danach von Hand nachziehen, weil sich die Seite seit dem Archiv geändert hat:
 - Kategorie-Leiste und Links in der Fußzeile auf Mietwerkstatt, Impressum und Datenschutz wieder einsetzen.
 - `sitemap.xml` neu schreiben (`node werkzeuge/modelle.mjs` schreibt sie aus allen Seiten).
 - Tests in `e2e/seite.spec.mjs` für Startseite, Ankauf und Teile aus dem Tag zurückholen.
+- Im Impressum die Abschnitte „Markennamen“ und „Bildnachweis“ aus dem Tag zurückholen (am 22.11.2026 entfernt,
+  `werkzeuge/modelle.mjs` schreibt den Bildnachweis zwischen die Marken `bildnachweis:start` und `bildnachweis:end`).
 - Texte der Mietwerkstatt nicht überschreiben: Der Stand in `main` ist der gültige
   (Handwerkzeug, Standgebühr 15 €, große SUV 20 €).
 
