@@ -478,6 +478,7 @@ p{margin:0 0 1em}
 .tires__price a{color:var(--accent);text-decoration:none;white-space:nowrap}
 .tires__price a:hover{text-decoration:underline}
 .tire-photo{position:relative;margin:0;border-radius:28px;padding:clamp(14px,2.4vw,26px) clamp(14px,2.4vw,26px) 12px;background:#fff;border:1px solid rgba(255,210,31,.38);box-shadow:0 0 0 6px rgba(255,210,31,.06),0 0 80px -22px rgba(255,210,31,.55),0 30px 60px -34px rgba(0,0,0,.85)}
+.tires .tire-photo{width:100%;max-width:400px;justify-self:center}
 .tire-photo img{display:block;width:100%;height:auto;border-radius:16px}
 .tire-photo figcaption{margin-top:4px;text-align:center;font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#55534c}
 .tire-specs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:48px}
@@ -582,7 +583,7 @@ p{margin:0 0 1em}
 .picker__knoepfe .btn--ghost{border-color:rgba(250,250,250,.4);background:rgba(6,7,12,.35)}
 .picker__knoepfe .btn--ghost:hover{border-color:var(--text);background:rgba(255,255,255,.08)}
 /* Die vier Kategorien: eine Reihe wie die Kennzahlen im Vorbild, groß gesetzt, mit Linie dazwischen. */
-.kats{width:100%;max-width:1180px;margin-top:clamp(36px,8vh,88px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line-strong)}
+.kats{width:100%;max-width:1180px;margin-top:clamp(36px,8vh,88px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line-strong)}
 .kat{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px 14px 20px;text-decoration:none;color:var(--text);border-right:1px solid var(--line);transition:background .25s var(--ease)}
 .kat:last-child{border-right:0}
 .kat::after{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .25s var(--ease)}
@@ -624,6 +625,7 @@ p{margin:0 0 1em}
   .kats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kat:nth-child(2){border-right:0}
   .kat:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .kat:last-child:nth-child(odd){grid-column:1/-1}
 }
 @media (max-width:640px){
   .picker__top{padding-top:16px;flex-wrap:wrap;row-gap:10px}
