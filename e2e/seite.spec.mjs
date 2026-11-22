@@ -10,11 +10,8 @@ const SITEMAP = [...readFileSync(new URL('../sitemap.xml', import.meta.url), 'ut
 const SEITEN = SITEMAP;
 
 const ALTE_ADRESSEN = {
-  // Seit 2026-11-22 zeigt die Seite nur die Mietwerkstatt, alle anderen Bereiche leiten dorthin.
+  // Seit 2026-11-22 zeigt die Seite nur die Mietwerkstatt, die Seiten für Autoankauf und Autoteile sind gelöscht (Archiv: ARCHIV.md).
   '/': '/mietwerkstatt/',
-  '/autoankauf/': '/mietwerkstatt/',
-  '/autoankauf/vw/golf/': '/mietwerkstatt/',
-  '/autoteile/': '/mietwerkstatt/',
   '/kfz-ankauf/': '/mietwerkstatt/',
   '/preisliste/': '/mietwerkstatt/#preise',
   '/preise/': '/mietwerkstatt/#preise',
